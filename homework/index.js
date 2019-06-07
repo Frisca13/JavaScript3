@@ -1,47 +1,31 @@
-'use strict';
+const promise = fetch('https://api.github.com/orgs/HackYourFuture/repos?per_page=100').then(
+  response => response.json(),
+);
 
-{
-  function fetchJSON(url, cb) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
-    xhr.responseType = 'json';
-    xhr.onload = () => {
-      if (xhr.status < 400) {
-        cb(null, xhr.response);
-      } else {
-        cb(new Error(`Network error: ${xhr.status} - ${xhr.statusText}`));
-      }
-    };
-    xhr.onerror = () => cb(new Error('Network request failed'));
-    xhr.send();
-  }
-
-  function createAndAppend(name, parent, options = {}) {
-    const elem = document.createElement(name);
-    parent.appendChild(elem);
-    Object.keys(options).forEach(key => {
-      const value = options[key];
-      if (key === 'text') {
-        elem.textContent = value;
-      } else {
-        elem.setAttribute(key, value);
-      }
+function selectRepo() {
+  promise.then(data => {
+    data.forEach(i => {
+      const repolist = document.createElement('option');
+      const opt = document.createTextNode(i.name);
+      repolist.appendChild(opt);
+      document.getElementById('repoList').appendChild(repolist);
     });
-    return elem;
-  }
-
-  function main(url) {
-    fetchJSON(url, (err, data) => {
-      const root = document.getElementById('root');
-      if (err) {
-        createAndAppend('div', root, { text: err.message, class: 'alert-error' });
-      } else {
-        createAndAppend('pre', root, { text: JSON.stringify(data, null, 2) });
-      }
-    });
-  }
-
-  const HYF_REPOS_URL = 'https://api.github.com/orgs/HackYourFuture/repos?per_page=100';
-
-  window.onload = () => main(HYF_REPOS_URL);
+  });
 }
+selectRepo();
+
+function myFunction() {
+  promise.then(data => {
+    data.forEach(i => {
+      const optionList = document.getElementById('repoList');
+      if (optionList.value === i.name) {
+        const dispTime = new Date(i.updated_at);
+        document.getElementById('repoTitle').innerHTML = i.name;
+        document.getElementById('repoDesc').innerHTML = i.description;
+        document.getElementById('repoForks').innerHTML = i.forks;
+        document.getElementById('repoLastUpdate').innerHTML = dispTime.toUTCString();
+      }
+    });
+  });
+}
+myFunction();
